@@ -1,1 +1,1 @@
-# investing-dashboard
+# fun-dashboard
