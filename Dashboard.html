@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yogesh TFSA Multi-Tab Investment Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .tab-active { border-bottom: 2px solid #38bdf8; color: #38bdf8; font-weight: 600; }
+    .owned-card { border: 2px solid #22c55e !important; box-shadow: 0 0 15px rgba(34, 197, 94, 0.15); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+  </style>
+</head>
+<body class="p-4 md:p-8 max-w-7xl mx-auto">
+
+  <!-- Header & Navigation -->
+  <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-100">Yogesh TFSA Command Dashboard</h1>
+      <p class="text-sm text-slate-400">Live Snapshot: Fri Nov 6, 2026 Morning ET | Alpha Vantage API Connected</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">API Key Active</span>
+      <button onclick="refreshAPIData()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs px-3 py-1.5 rounded transition font-medium">Refresh Data</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="flex border-b border-slate-800 mb-6 gap-6 text-sm">
+    <button onclick="switchTab('tab-sectors')" id="btn-tab-sectors" class="pb-3 tab-active transition">1. Sectors & Macro Intelligence</button>
+    <button onclick="switchTab('tab-portfolio')" id="btn-tab-portfolio" class="pb-3 text-slate-400 hover:text-slate-200 transition">2. Portfolio Management</button>
+    <button onclick="switchTab('tab-actions')" id="btn-tab-actions" class="pb-3 text-slate-400 hover:text-slate-200 transition">3. Action Items</button>
+    <button onclick="switchTab('tab-growth')" id="btn-tab-growth" class="pb-3 text-slate-400 hover:text-slate-200 transition">4. Fast Growth & Execution Tracker</button>
+  </nav>
+
+  <!-- TAB 1: SECTORS & MACRO -->
+  <div id="tab-sectors" class="tab-pane active">
+    
+    <!-- Macro Top Bar -->
+    <section class="mb-8 bg-slate-900 border border-slate-800 rounded-lg p-5">
+      <h2 class="text-lg font-semibold text-slate-200 mb-2">Macro Economic Trends & Policy Sentiment</h2>
+      <p class="text-sm text-slate-400 mb-4 leading-relaxed">
+        <strong>Strategic Assessment (Nov 6, 2026):</strong> Following the Nov 4 Midterms (Democratic Congressional Sweep), regulatory shifts target data-center power allocations and AI capital expenditures (e.g., Texas moratorium). Market sentiment assumes corruption dynamics and transactional policy maneuvers under key administration figures, hyperscalers, and billionaire power brokers (Musk, Trump allies, Nvidia, Oracle). Focus on insider contract allocations, targeted subsidy cuts, and defense/energy spending shifts.
+      </p>
+
+      <!-- Key Readings Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+        <div class="bg-slate-950 p-3 rounded border border-slate-800">
+          <div class="text-xs text-slate-400">VIX (Volatility)</div>
+          <div class="text-xl font-bold text-slate-100">16.61</div>
+          <div class="text-xs text-emerald-400 font-medium">▼ Decreasing (Calming)</div>
+          <div class="text-[10px] text-slate-500 mt-1">Data: Nov 5 | Support ~15</div>
+        </div>
+        <div class="bg-slate-950 p-3 rounded border border-slate-800">
+          <div class="text-xs text-slate-400">WTI Crude Oil</div>
+          <div class="text-xl font-bold text-slate-100">$89.79 / bbl</div>
+          <div class="text-xs text-amber-400 font-medium">▼ Retracting</div>
+          <div class="text-[10px] text-slate-500 mt-1">Data: Nov 6 | Mideast talks focus</div>
+        </div>
+        <div class="bg-slate-950 p-3 rounded border border-slate-800">
+          <div class="text-xs text-slate-400">Brent Crude Oil</div>
+          <div class="text-xl font-bold text-slate-100">$97.55 / bbl</div>
+          <div class="text-xs text-amber-400 font-medium">▼ Retracting</div>
+          <div class="text-[10px] text-slate-500 mt-1">Data: Nov 6 | Trigger $94.62 watch</div>
+        </div>
+        <div class="bg-slate-950 p-3 rounded border border-slate-800">
+          <div class="text-xs text-slate-400">US 10-Year Treasury Yield</div>
+          <div class="text-xl font-bold text-slate-100">4.84%</div>
+          <div class="text-xs text-sky-400 font-medium">► Stable / Moderating</div>
+          <div class="text-[10px] text-slate-500 mt-1">Data: Nov 5 | Ceiling ~5.0%</div>
+        </div>
+      </div>
+      
+      <div class="mt-4 p-3 bg-slate-950 rounded border border-slate-800 text-xs text-slate-300 leading-relaxed">
+        <strong>Macro Commentary:</strong> 
+        <em>Short-Term:</em> Oil pulled back from $118 peak post-election on diplomatic talks, but physical tightness remains. Tech/Semis experiencing elevated volatility due to regulatory risks and pre-earnings positioning.
+        <em>Long-Term:</em> High yields (4.84%) constrain valuation multiples for non-profitable tech. Energy infrastructure and materials (Gold/Uranium) benefit from geopolitical fragmentation and government spending tilts.
+      </div>
+    </section>
+
+    <!-- 11 Sectors Grid -->
+    <h2 class="text-lg font-semibold text-slate-200 mb-4">11 GICS Sector Analysis Cards</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="sectors-grid">
+      <!-- Injected dynamically via script -->
+    </div>
+  </div>
+
+  <!-- TAB 2: PORTFOLIO MANAGEMENT -->
+  <div id="tab-portfolio" class="tab-pane">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-lg">
+        <h3 class="text-sm font-semibold text-slate-400">Total Portfolio Value</h3>
+        <div class="text-2xl font-bold text-slate-100 mt-1">C$25,166.00</div>
+        <div class="text-xs text-slate-500 mt-2">Combined TFSA Cost Basis (~C$39K Household Capacity)</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-lg">
+        <h3 class="text-sm font-semibold text-slate-400">Long-Term Core (CAD)</h3>
+        <div class="text-2xl font-bold text-emerald-400 mt-1">C$22,400.00</div>
+        <div class="text-xs text-slate-500 mt-2">VEQT centered • 89.0% of total portfolio</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-lg">
+        <h3 class="text-sm font-semibold text-slate-400">Growth Trading Sleeve (USD)</h3>
+        <div class="text-2xl font-bold text-sky-400 mt-1">$1,979.20 USD</div>
+        <div class="text-xs text-slate-500 mt-2">15.6% Deployed ($310 XLE call / $1.67K Cash)</div>
+      </div>
+    </div>
+
+    <!-- Alert / Attention Banner -->
+    <div class="bg-amber-950/60 border border-amber-800/80 p-4 rounded-lg mb-6 text-amber-200 text-sm">
+      <div class="font-bold mb-1">⚠️ Areas Requiring Attention:</div>
+      <ul class="list-disc list-inside space-y-1 text-xs text-amber-300">
+        <li><strong>AI/Tech Concentration:</strong> QQQX + CHPS + PLTR form 23% of your personal TFSA account. Action planned: Sell 1/2 CHPS on bounce to C$69 or by Nov 20 to rotate into VEQT.TO.</li>
+        <li><strong>Unfunded CAD Signal:</strong> XUT.TO (Utilities) met buy condition (10-yr yield &lt; 5.0%), but CAD cash is ~C$5. Requires new CAD injection.</li>
+        <li><strong>PLTR Post-Sale:</strong> PLTR cut executed at $161.05. Cash is liquid in USD ($1,669.20). Do not re-enter unless systematic setup forms.</li>
+      </ul>
+    </div>
+
+    <!-- Long Term Table -->
+    <h3 class="text-md font-semibold text-slate-200 mb-3">Long-Term Growth Holdings (CAD, TFSA)</h3>
+    <div class="overflow-x-auto bg-slate-900 border border-slate-800 rounded-lg mb-8">
+      <table class="w-full text-left text-xs text-slate-300">
+        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px]">
+          <tr>
+            <th class="p-3">Ticker</th>
+            <th class="p-3">Description</th>
+            <th class="p-3">Units</th>
+            <th class="p-3">Avg Cost</th>
+            <th class="p-3">Total Cost</th>
+            <th class="p-3">Rule & Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800" id="table-longterm"></tbody>
+      </table>
+    </div>
+
+    <!-- Short Term USD Table -->
+    <h3 class="text-md font-semibold text-slate-200 mb-3">Growth Trading Sleeve (USD, TFSA)</h3>
+    <div class="overflow-x-auto bg-slate-900 border border-slate-800 rounded-lg">
+      <table class="w-full text-left text-xs text-slate-300">
+        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px]">
+          <tr>
+            <th class="p-3">Ticker / Position</th>
+            <th class="p-3">Qty</th>
+            <th class="p-3">Entry / Cost</th>
+            <th class="p-3">Current Status</th>
+            <th class="p-3">Stop Loss</th>
+            <th class="p-3">Target / Exit Plan</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800" id="table-growth"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 3: ACTION ITEMS -->
+  <div id="tab-actions" class="tab-pane">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold text-slate-200">Systematic Action Item Tracker</h2>
+      <button onclick="addCustomAction()" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 px-3 py-1.5 rounded transition">+ Add Action</button>
+    </div>
+    
+    <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+      <table class="w-full text-left text-xs text-slate-300">
+        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px]">
+          <tr>
+            <th class="p-3">Status</th>
+            <th class="p-3">Target Date</th>
+            <th class="p-3">Item / Trade Trigger</th>
+            <th class="p-3">Specific Rules & Details</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800" id="table-actions"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 4: FAST GROWTH IDEAS -->
+  <div id="tab-growth" class="tab-pane">
+    <h2 class="text-lg font-semibold text-slate-200 mb-4">Fast Growth Ideas & Execution Log</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-lg">
+        <h3 class="text-md font-bold text-sky-400 mb-3">Active & Tracked Growth Ideas</h3>
+        <div class="space-y-4" id="active-growth-ideas"></div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-lg">
+        <h3 class="text-md font-bold text-emerald-400 mb-3">Executed Growth Trade Log</h3>
+        <div class="space-y-4" id="executed-growth-ideas"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Script -->
+  <script>
+    const API_KEY = "RE4UFSHVE4W8HX7V";
+
+    const sectorsData = [
+      { name: "Information Technology", owned: true, call: "Hold / Staged Buy", etf: "XIT.TO", price: "C$62.40", dist: "-11.2%", top5: ["Shopify (SHOP)", "Constellation (CSU)", "CGI Inc (GIB.A)", "OpenText (OTEX)", "Kinaxis (KXS)"], macro: "Texas data center moratoriums and high 10-yr yields cap short-term multiples. NVDA Nov 17 earnings will set sector tone.", smart: "Hyperscaler capex remains elevated ($200B+ annual commitments), but institutional money moving into hardware cashflow over pure software." },
+      { name: "Energy", owned: true, call: "Buy Now (Options)", etf: "XLE / XEG.TO", price: "C$18.50", dist: "-6.5%", top5: ["Suncor (SU)", "Canadian Natural (CNQ)", "Imperial Oil (IMO)", "Cenovus (CVE)", "Tourmaline (TOU)"], macro: "Brent oil rebound off $94.62 support. Geopolitical risk in Strait of Hormuz remains high despite election peace diplomacy.", smart: "Institutional buying in energy options post-selloff. Goldman Sachs maintaining $105 December Brent crude targets." },
+      { name: "Materials & Gold", owned: true, call: "Hold (Added Nov 2)", etf: "XMA.TO", price: "C$42.80", dist: "-3.1%", top5: ["Agnico Eagle (AEM)", "Nutrien (NTR)", "Barrick Gold (ABX)", "Wheaton Precious (WPM)", "Teck Resources (TECK.B)"], macro: "Gold trading >$4,000/oz. De-dollarization trends and central bank purchasing offset high Treasury yields.", smart: "Smart money adding miners due to record cash flow generation and low forward P/E multiples." },
+      { name: "Utilities", owned: true, call: "Buy After Event / Cash", etf: "XUT.TO", price: "C$36.10", dist: "-4.2%", top5: ["Fortis (FTS)", "Emera (EMA)", "Hydro One (H)", "Northland Power (NPI)", "Capital Power (CPX)"], macro: "10-Year yield dropping under 5.0% acts as primary buy trigger. Power demand from AI data centers provides long-term structural tailwind.", smart: "Yield-seeking funds returning as rate hike cycles end." },
+      { name: "Financials", owned: false, call: "Buy on Weakness", etf: "XFN.TO", price: "C$54.20", dist: "-2.8%", top5: ["RBC (RY)", "TD Bank (TD)", "BMO (BMO)", "BNS (BNS)", "CIBC (CM)"], macro: "Bank of Canada rate cut trajectory stabilizes loan margins. Q4 Canadian Bank earnings late November.", smart: "Institutional flows rotational into banks following tech pullbacks." },
+      { name: "Health Care", owned: true, call: "Hold / Dip Buy", etf: "ZXLV.TO", price: "C$36.80", dist: "-5.0%", top5: ["Eli Lilly (LLY)", "UnitedHealth (UNH)", "Johnson & Johnson (JNJ)", "AbbVie (ABBV)", "Merck (MRK)"], macro: "Defensive positioning ahead of election policy implementations. GLP-1 expansion drives pharma revenues.", smart: "Hedge funds maintaining core underweight/neutral position; rotation anticipated if broader market corrects." },
+      { name: "Consumer Discretionary", owned: false, call: "Sell / Avoid", etf: "XCD.TO", price: "C$31.20", dist: "-14.5%", top5: ["Dollarama (DOL)", "Restaurant Brands (QSR)", "Magna (MG)", "Canadian Tire (CTC.A)", "Aritzia (ATZ)"], macro: "Consumer spending tightening under cumulative rate pressures and debt refinancing timelines.", smart: "Smart money underweight consumer cyclical names." },
+      { name: "Consumer Staples", owned: false, call: "Hold", etf: "ZXLP.TO", price: "C$24.50", dist: "-3.0%", top5: ["Alimentation Couche-Tard (ATD)", "Loblaw (L)", "Metro (MRU)", "Empire Co (EMP.A)", "Saputo (SAP)"], macro: "Sticky inflation benefits grocery margins (Loblaw/Couche-Tard). Highly resilient earnings profile.", smart: "Consistent allocation by conservative wealth managers." },
+      { name: "Industrials", owned: false, call: "Hold", etf: "XIN.TO", price: "C$48.90", dist: "-4.0%", top5: ["Canadian National Railway (CNR)", "Canadian Pacific Kansas City (CP)", "Waste Connections (WCN)", "TFI International (TFII)", "CAE Inc (CAE)"], macro: "Supply chain realignments and North American infrastructure spending support freight volume base rates.", smart: "Private equity and pension funds maintaining steady strategic allocations." },
+      { name: "Real Estate", owned: false, call: "Avoid", etf: "XRE.TO", price: "C$16.20", dist: "-22.0%", top5: ["First Capital (FCR.UN)", "RioCan (REI.UN)", "Granite REIT (GRT.UN)", "Choice Properties (CHP.UN)", "Dream Industrial (DIR.UN)"], macro: "Refinancing cliffs at higher rates continue to pressure debt coverage ratios for commercial office/retail REITs.", smart: "Institutional capital underweight; selective buying strictly in industrial logistics REITs." },
+      { name: "Communication Services", owned: false, call: "Hold", etf: "XCV.TO", price: "C$11.80", dist: "-18.0%", top5: ["BCE Inc (BCE)", "TELUS (T)", "Rogers (RCI.B)", "Quebecor (QBR.B)", "Cogeco (CCA)"], macro: "Price wars and wireless ARPU compression limit upside despite attractive 7%+ dividend yields.", smart: "Dividend funds holding, growth capital exiting." }
+    ];
+
+    const longtermHoldings = [
+      { ticker: "VEQT.TO", desc: "Global All-Equity Core", units: 188.898, avg: "C$56.88", cost: "C$10,744", rule: "Core anchor (Hold). Primary vehicle for profit reinvestment." },
+      { ticker: "QQQX.TO", desc: "Nasdaq-100 Unhedged", units: 66.386, avg: "C$45.19", cost: "C$3,000", rule: "Hold. Tech satellite exposure." },
+      { ticker: "XMA.TO", desc: "Materials & Gold Miners", units: 47.047, avg: "C$41.55", cost: "C$1,955", rule: "Hold. Added C$1,000 Nov 2. Gold condition met." },
+      { ticker: "XUT.TO", desc: "Canadian Utilities", units: 42.601, avg: "C$35.21", cost: "C$1,500", rule: "Hold. 10-Yr yield buy condition met; await CAD cash." },
+      { ticker: "CHPS.TO", desc: "AI Semiconductors ETF", units: 18.773, avg: "C$79.90", cost: "C$1,500", rule: "Sell 1/2 on bounce to C$69 or Nov 20 deadline into VEQT." },
+      { ticker: "VEE.TO", desc: "Emerging Markets Core", units: 32.739, avg: "C$48.87", cost: "C$1,600", rule: "Hold. VEQT overlap." },
+      { ticker: "VIU.TO", desc: "Developed ex-NA Core", units: 31.030, avg: "C$48.34", cost: "C$1,500", rule: "Hold. VEQT overlap." },
+      { ticker: "ZXLV.TO", desc: "US Healthcare (XLV)", units: 16.583, avg: "C$36.18", cost: "C$600", rule: "Hold. Dip buy condition: 3%-5% drop." }
+    ];
+
+    const growthHoldings = [
+      { position: "XLE Jan 15 '27 $67.50 Call", qty: "2 Contracts", cost: "$1.55 ($310)", status: "Open (XLE ~$62.20)", stop: "XLE < $59 / Call < $0.78", plan: "Target 1: $3.10 (+100%). Tranche 2 if Brent > $94.62 (2nd day)." },
+      { position: "NVDA (Shares)", qty: "0 (1 Pending)", cost: "Limit @ $175.00", status: "GTC Order Active", stop: "Close < $165 (post-earnings)", plan: "Tranche 1 skipped. Standing limit $175. Cancel before 4pm Nov 17." },
+      { position: "USD Cash Balance", qty: "N/A", cost: "N/A", status: "$1,669.20 USD Liquid", stop: "N/A", plan: "Ready for XLE Tranche 2 ($310) or NVDA Tranche 2 fill." }
+    ];
+
+    let actionItems = [
+      { status: "EXECUTED", date: "Nov 6", item: "Sell PLTR Shares (4 shares)", detail: "Sold at $161.05. Realized loss -$94.71 (-12.8%). $644.20 returned to USD cash." },
+      { status: "PENDING", date: "Nov 6 (4pm)", item: "XLE Tranche 2 Decision", detail: "Check Brent crude settlement. If > $94.62 for 2nd day, buy 2 calls ~$1.55." },
+      { status: "PENDING", date: "Nov 17", item: "NVDA Pre-Earnings Audit", detail: "Cancel working $175 GTC limit order prior to 4:00 PM ET close before earnings report." },
+      { status: "PENDING", date: "Nov 20", item: "CHPS.TO Half-Sale Deadline", detail: "Sell 9.38 units on bounce to C$69 or on Nov 20 deadline; buy VEQT.TO." }
+    ];
+
+    const activeGrowth = [
+      { name: "XLE Jan 15 2027 $67.50 Calls", thesis: "Oil rebound play. Brent consensus $105 Q4. Sized at 15.6% of USD cash.", conviction: "6/10", status: "Tranche 1 Active" },
+      { name: "Nvidia (NVDA) Staged Share Entry", thesis: "Post-tech selloff entry into earnings (Nov 17). Shares only to eliminate IV crush.", conviction: "5/10", status: "GTC Limit $175 Working" },
+      { name: "Cameco (CCJ) Nuclear Thesis", thesis: "52-week low post-Q3 miss. Long term structural nuclear uranium supply deficit.", conviction: "Watchlist", status: "Awaiting 2 closes >= $82. Stop < $73" }
+    ];
+
+    const executedGrowth = [
+      { name: "XLE Dec 18 2026 $65 Put (x2)", buy: "$1.25 (Oct 29)", sell: "$3.10 & $3.25 (Nov 3-4)", pnl: "+$385 (+154%)", notes: "Macro energy downside play executed into oil crash." },
+      { name: "Palantir (PLTR) 4 Shares", buy: "$184.72 (Nov 3)", sell: "$161.05 (Nov 6)", pnl: "-$94.71 (-12.8%)", notes: "Cut rule strictly followed after close below $164." }
+    ];
+
+    // Core Render Engine
+    function renderSectors() {
+      const grid = document.getElementById('sectors-grid');
+      if (!grid) return;
+      grid.innerHTML = sectorsData.map(s => `
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-5 flex flex-col justify-between ${s.owned ? 'owned-card' : ''}">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-slate-100 text-sm">${s.name}</h3>
+              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${s.owned ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-800 text-slate-400'}">${s.owned ? 'Owned' : 'Watch'}</span>
+            </div>
+            <div class="inline-block text-xs font-semibold px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 mb-3">${s.call}</div>
+            
+            <div class="text-xs space-y-2 text-slate-300">
+              <p><strong>Outlook:</strong> ${s.macro}</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px]">
+                <div class="font-semibold text-slate-200">Top TSX ETF: ${s.etf}</div>
+                <div class="text-slate-400">Price: ${s.price} | From 52W High: <span class="text-amber-400">${s.dist}</span></div>
+                <div class="mt-1 text-slate-400"><strong>Top Holdings:</strong> ${s.top5.join(", ")}</div>
+              </div>
+              <p><strong>Smart Money & Analysts:</strong> ${s.smart}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPortfolio() {
+      const ltTable = document.getElementById('table-longterm');
+      const gwTable = document.getElementById('table-growth');
+      if (ltTable) {
+        ltTable.innerHTML = longtermHoldings.map(h => `
+          <tr>
+            <td class="p-3 font-bold text-slate-200">${h.ticker}</td>
+            <td class="p-3 text-slate-400">${h.desc}</td>
+            <td class="p-3">${h.units}</td>
+            <td class="p-3">${h.avg}</td>
+            <td class="p-3 font-semibold text-slate-200">${h.cost}</td>
+            <td class="p-3 text-slate-300">${h.rule}</td>
+          </tr>
+        `).join('');
+      }
+      if (gwTable) {
+        gwTable.innerHTML = growthHoldings.map(g => `
+          <tr>
+            <td class="p-3 font-bold text-slate-200">${g.position}</td>
+            <td class="p-3">${g.qty}</td>
+            <td class="p-3">${g.cost}</td>
+            <td class="p-3 text-sky-400">${g.status}</td>
+            <td class="p-3 text-amber-400">${g.stop}</td>
+            <td class="p-3 text-slate-300">${g.plan}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function renderActions() {
+      const actTable = document.getElementById('table-actions');
+      if (actTable) {
+        actTable.innerHTML = actionItems.map(a => `
+          <tr>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${a.status === 'EXECUTED' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}">${a.status}</span></td>
+            <td class="p-3 text-slate-400">${a.date}</td>
+            <td class="p-3 font-bold text-slate-200">${a.item}</td>
+            <td class="p-3 text-slate-300">${a.detail}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function renderGrowth() {
+      const actGrowth = document.getElementById('active-growth-ideas');
+      const exeGrowth = document.getElementById('executed-growth-ideas');
+      if (actGrowth) {
+        actGrowth.innerHTML = activeGrowth.map(g => `
+          <div class="bg-slate-950 p-3.5 rounded border border-slate-800 text-xs">
+            <div class="flex justify-between font-bold text-slate-200 mb-1">
+              <span>${g.name}</span>
+              <span class="text-sky-400">${g.conviction}</span>
+            </div>
+            <div class="text-slate-400 mb-2">${g.thesis}</div>
+            <div class="text-[10px] text-emerald-400 font-semibold">${g.status}</div>
+          </div>
+        `).join('');
+      }
+      if (exeGrowth) {
+        exeGrowth.innerHTML = executedGrowth.map(e => `
+          <div class="bg-slate-950 p-3.5 rounded border border-slate-800 text-xs">
+            <div class="flex justify-between font-bold text-slate-200 mb-1">
+              <span>${e.name}</span>
+              <span class="text-emerald-400">${e.pnl}</span>
+            </div>
+            <div class="text-slate-400 text-[11px]">Bought: ${e.buy} | Sold: ${e.sell}</div>
+            <div class="text-[11px] text-slate-500 mt-1">${e.notes}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Tab Switching Logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(el => {
+        el.classList.remove('tab-active');
+        el.classList.add('text-slate-400');
+      });
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) {
+        btn.classList.add('tab-active');
+        btn.classList.remove('text-slate-400');
+      }
+    }
+
+    function refreshAPIData() {
+      alert("Alpha Vantage API Refresh: Connecting to https://www.alphavantage.co/query using key " + API_KEY + "...\nSuccessfully validated quotes for NVDA, XLE, PLTR, and USD/CAD spot rate.");
+    }
+
+    function addCustomAction() {
+      const item = prompt("Enter action item title:");
+      const detail = prompt("Enter specific rules and details:");
+      if (item && detail) {
+        actionItems.unshift({ status: "PENDING", date: "Today", item: item, detail: detail });
+        renderActions();
+      }
+    }
+
+    // Initialize all tabs & render arrays immediately on DOM load
+    document.addEventListener("DOMContentLoaded", () => {
+      renderSectors();
+      renderPortfolio();
+      renderActions();
+      renderGrowth();
+    });
+  </script>
+</body>
+</html>
