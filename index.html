@@ -22,7 +22,7 @@
       <p class="text-sm text-slate-400" id="header-timestamp">Loading live data from JSONBin database...</p>
     </div>
     <div class="flex items-center gap-3">
-      <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800" id="db-status">DB Connected</span>
+      <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700" id="db-status">Connecting...</span>
       <button onclick="fetchLatestData()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs px-3 py-1.5 rounded transition font-medium">Sync Latest Trades</button>
     </div>
   </header>
@@ -144,6 +144,7 @@
   <!-- Database Integration & Dynamic UI Renderer -->
   <script>
     const BIN_ID = "6aee2662ffd5d16053acfe60";
+    const READ_ONLY_KEY = "$2a$10$2m90bjMM54EeuXB1PodTf.f2nFo8pkPser5AS00MhHTyfub8iuPlK";
     const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
 
     async function fetchLatestData() {
@@ -152,9 +153,19 @@
       
       try {
         const response = await fetch(JSONBIN_URL, {
-          headers: { "X-Bin-Meta": "false" }
+          method: "GET",
+          headers: {
+            "X-Access-Key": READ_ONLY_KEY
+          }
         });
-        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const resData = await response.json();
+        const data = resData.record ? resData.record : resData;
+        
         renderDashboard(data);
         if (dbStatus) {
           dbStatus.innerText = "DB Live";
@@ -163,7 +174,7 @@
       } catch (err) {
         console.error("Failed to load JSONBin data:", err);
         if (dbStatus) {
-          dbStatus.innerText = "Offline / Cache";
+          dbStatus.innerText = "Offline / Error";
           dbStatus.className = "text-xs px-2.5 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-800";
         }
       }
@@ -172,37 +183,34 @@
     function renderDashboard(data) {
       if (!data) return;
 
-      // Header
       if (data.timestamp) document.getElementById('header-timestamp').innerText = data.timestamp;
 
-      // Portfolio Summary Totals
       if (data.totals) {
-        document.getElementById('val-total-portfolio').innerText = data.totals.totalPortfolioCAD;
-        document.getElementById('val-core-cad').innerText = data.totals.coreCAD;
-        document.getElementById('val-core-desc').innerText = data.totals.coreDesc;
-        document.getElementById('val-growth-usd').innerText = data.totals.growthUSD;
-        document.getElementById('val-growth-desc').innerText = data.totals.growthDesc;
+        document.getElementById('val-total-portfolio').innerText = data.totals.totalPortfolioCAD || "C$0.00";
+        document.getElementById('val-core-cad').innerText = data.totals.coreCAD || "C$0.00";
+        document.getElementById('val-core-desc').innerText = data.totals.coreDesc || "";
+        document.getElementById('val-growth-usd').innerText = data.totals.growthUSD || "$0.00 USD";
+        document.getElementById('val-growth-desc').innerText = data.totals.growthDesc || "";
       }
 
-      // Alerts
       if (data.alerts) {
         document.getElementById('portfolio-alerts-list').innerHTML = data.alerts.map(a => `<li>${a}</li>`).join('');
       }
 
-      // Macro Readings
       if (data.macroReadings) {
-        document.getElementById('macro-strategic-assessment').innerHTML = data.macroReadings.assessment;
-        document.getElementById('macro-readings-grid').innerHTML = data.macroReadings.readings.map(r => `
-          <div class="bg-slate-950 p-3 rounded border border-slate-800">
-            <div class="text-xs text-slate-400">${r.label}</div>
-            <div class="text-xl font-bold text-slate-100">${r.val}</div>
-            <div class="text-xs ${r.color} font-medium">${r.change}</div>
-            <div class="text-[10px] text-slate-500 mt-1">${r.sub}</div>
-          </div>
-        `).join('');
+        document.getElementById('macro-strategic-assessment').innerHTML = data.macroReadings.assessment || "";
+        if (data.macroReadings.readings) {
+          document.getElementById('macro-readings-grid').innerHTML = data.macroReadings.readings.map(r => `
+            <div class="bg-slate-950 p-3 rounded border border-slate-800">
+              <div class="text-xs text-slate-400">${r.label}</div>
+              <div class="text-xl font-bold text-slate-100">${r.val}</div>
+              <div class="text-xs ${r.color} font-medium">${r.change}</div>
+              <div class="text-[10px] text-slate-500 mt-1">${r.sub}</div>
+            </div>
+          `).join('');
+        }
       }
 
-      // Sectors Grid
       if (data.sectors) {
         document.getElementById('sectors-grid').innerHTML = data.sectors.map(s => `
           <div class="bg-slate-900 border border-slate-800 rounded-lg p-5 flex flex-col justify-between ${s.owned ? 'owned-card' : ''}">
@@ -217,7 +225,7 @@
                 <div class="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px]">
                   <div class="font-semibold text-slate-200">Top TSX ETF: ${s.etf}</div>
                   <div class="text-slate-400">Price: ${s.price} | From 52W High: <span class="text-amber-400">${s.dist}</span></div>
-                  <div class="mt-1 text-slate-400"><strong>Top Holdings:</strong> ${s.top5.join(", ")}</div>
+                  <div class="mt-1 text-slate-400"><strong>Top Holdings:</strong> ${Array.isArray(s.top5) ? s.top5.join(", ") : s.top5}</div>
                 </div>
                 <p><strong>Smart Money & Analysts:</strong> ${s.smart}</p>
               </div>
@@ -226,7 +234,6 @@
         `).join('');
       }
 
-      // Long Term Table
       if (data.longtermHoldings) {
         document.getElementById('table-longterm').innerHTML = data.longtermHoldings.map(h => `
           <tr>
@@ -240,7 +247,6 @@
         `).join('');
       }
 
-      // Growth Holdings Table
       if (data.growthHoldings) {
         document.getElementById('table-growth').innerHTML = data.growthHoldings.map(g => `
           <tr>
@@ -254,7 +260,6 @@
         `).join('');
       }
 
-      // Actions Table
       if (data.actionItems) {
         document.getElementById('table-actions').innerHTML = data.actionItems.map(a => `
           <tr>
@@ -266,7 +271,6 @@
         `).join('');
       }
 
-      // Growth Ideas
       if (data.activeGrowth) {
         document.getElementById('active-growth-ideas').innerHTML = data.activeGrowth.map(g => `
           <div class="bg-slate-950 p-3.5 rounded border border-slate-800 text-xs">
@@ -294,7 +298,6 @@
       }
     }
 
-    // Tab Switching Logic
     function switchTab(tabId) {
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(el => {
