@@ -81,6 +81,7 @@
             <th class="p-3">Units</th>
             <th class="p-3">Avg Cost</th>
             <th class="p-3">Total Cost</th>
+            <th class="p-3">Share (%)</th>
             <th class="p-3">Rule & Action</th>
           </tr>
         </thead>
@@ -242,6 +243,7 @@
             <td class="p-3">${h.units}</td>
             <td class="p-3">${h.avg}</td>
             <td class="p-3 font-semibold text-slate-200">${h.cost}</td>
+            <td class="p-3 font-medium text-sky-400">${h.share || '—'}</td>
             <td class="p-3 text-slate-300">${h.rule}</td>
           </tr>
         `).join('');
