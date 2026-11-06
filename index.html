@@ -24,8 +24,32 @@
     <div class="flex items-center gap-3">
       <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700" id="db-status">Connecting...</span>
       <button onclick="fetchLatestData()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs px-3 py-1.5 rounded transition font-medium">Sync Latest Trades</button>
+      <button onclick="toggleModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded transition font-medium">⚡ Direct Update</button>
     </div>
   </header>
+
+  <!-- Modal for Direct DB Update -->
+  <div id="update-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-xl w-full shadow-2xl">
+      <h3 class="text-lg font-bold text-slate-100 mb-2">Push Database Update</h3>
+      <p class="text-xs text-slate-400 mb-4">Paste the Master Key once to authorize instant updates directly from your browser.</p>
+      
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Master Key ($2a$10$...)</label>
+        <input type="password" id="input-master-key" placeholder="Paste Master Key here" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Updated JSON Payload</label>
+        <textarea id="input-json-payload" rows="8" placeholder="Paste updated JSON block from chat here..." class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-sky-500"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button onclick="toggleModal(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-2 rounded transition">Cancel</button>
+        <button onclick="pushDBUpdate()" id="btn-push-update" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2 rounded font-medium transition">Push to Live DB</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Navigation Tabs -->
   <nav class="flex border-b border-slate-800 mb-6 gap-6 text-sm">
@@ -147,6 +171,7 @@
     const BIN_ID = "6aee2662ffd5d16053acfe60";
     const READ_ONLY_KEY = "$2a$10$2m90bjMM54EeuXB1PodTf.f2nFo8pkPser5AS00MhHTyfub8iuPlK";
     const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+    const JSONBIN_PUT_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
     async function fetchLatestData() {
       const dbStatus = document.getElementById('db-status');
@@ -178,6 +203,55 @@
           dbStatus.innerText = "Offline / Error";
           dbStatus.className = "text-xs px-2.5 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-800";
         }
+      }
+    }
+
+    function toggleModal(show) {
+      const modal = document.getElementById('update-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+        const savedKey = localStorage.getItem('jsonbin_master_key');
+        if (savedKey) document.getElementById('input-master-key').value = savedKey;
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    async function pushDBUpdate() {
+      const masterKey = document.getElementById('input-master-key').value.trim();
+      const rawJSON = document.getElementById('input-json-payload').value.trim();
+      const btn = document.getElementById('btn-push-update');
+
+      if (!masterKey || !rawJSON) {
+        alert("Please provide both Master Key and JSON Payload.");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(rawJSON);
+        btn.innerText = "Pushing...";
+        btn.disabled = true;
+
+        const res = await fetch(JSONBIN_PUT_URL, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": masterKey
+          },
+          body: JSON.stringify(parsed)
+        });
+
+        if (!res.ok) throw new Error("Failed to update database.");
+
+        localStorage.setItem('jsonbin_master_key', masterKey);
+        alert("Database successfully updated!");
+        toggleModal(false);
+        fetchLatestData();
+      } catch (err) {
+        alert("Error updating DB: " + err.message);
+      } finally {
+        btn.innerText = "Push to Live DB";
+        btn.disabled = false;
       }
     }
 
